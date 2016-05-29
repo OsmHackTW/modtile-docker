@@ -38,19 +38,11 @@ ADD mod_tile.conf /etc/apache2/mods-available/
 RUN a2enmod mod_tile \
  && install --owner=www-data --group=www-data -d /var/lib/mod_tile
 
-# Configure renderd
-ADD renderd.conf.sed /tmp/
-RUN cd /usr/local/etc \
- && sed --file /tmp/renderd.conf.sed --in-place renderd.conf \
- && install --owner=www-data --group=www-data -d /var/run/renderd \
- && cd -
-
 # Install the Mapnik stylesheet and the coastline data
-RUN apt-get install -y subversion unzip  wget \
+RUN apt-get install -y subversion unzip wget \
  && svn co http://svn.openstreetmap.org/applications/rendering/mapnik /usr/local/src/mapnik-style \
- && cd /usr/local/src/mapnik-style \
- && ./get-coastlines.sh /usr/local/share \
- && cd - 
+ && bash -e /usr/local/src/mapnik-style/get-coastlines.sh /usr/local/share \
+ && cd -
 
 ## Configure mapnik style-sheets
 ADD settings.sed /tmp/
@@ -65,6 +57,10 @@ RUN cd /usr/local/src/mapnik-style/inc \
 # Setup web pages
 RUN rm -rf /var/www/html
 ADD leafletjs-localmap /var/www/html
+
+# Configure renderd
+ADD renderd.conf /usr/local/etc/renderd.conf
+RUN install --owner=www-data --group=www-data -d /var/run/renderd
 
 # Setup supervisord
 ENV SUPERVISOR_VERSION=3.2.0-2
