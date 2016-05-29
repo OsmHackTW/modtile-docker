@@ -5,8 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN sed -e s%http://archive.ubuntu.com/ubuntu/%mirror://mirrors.ubuntu.com/mirrors.txt% -i /etc/apt/sources.list \
  && apt-get update \
  && apt-get dist-upgrade -y \
- && apt-get install -y vim \
- && apt-get install -y git ca-certificates
+ && apt-get install -y vim git ca-certificates
 
 # Verify that Mapnik has been installed correctly
 RUN python -c 'import mapnik'
@@ -53,6 +52,25 @@ RUN cd /usr/local/src/mapnik-style/inc \
  && chmod 755 /usr/local/bin/datasource-settings.sh \
  && chown -R www-data /usr/local/src/mapnik-style/inc \
  && cd -
+
+# carto & millstone
+RUN apt-get install -y npm \
+ && ln -s /usr/bin/nodejs /usr/bin/node \
+ && npm install carto millstone -g
+
+# Install openstreetmap-carto
+ENV OSM_CARTO_VERSION=v2.39.0
+RUN git clone --depth 1 --branch ${OSM_CARTO_VERSION} https://github.com/gravitystorm/openstreetmap-carto.git /usr/local/src/openstreetmap-carto \
+ && cd /usr/local/src/openstreetmap-carto \
+ && ./get-shapefiles.sh \
+ && cd -
+
+# Install osm-bright
+ENV OSM_BRIGHT_VERSION=master
+RUN git clone --depth 1 --branch ${OSM_BRIGHT_VERSION} https://github.com/mapbox/osm-bright.git /usr/local/src/osm-bright \
+ && sed -e s%unifont%Unifont% -i /usr/local/src/osm-bright/osm-bright/palette.mss \
+ && ln -s /usr/local/src/openstreetmap-carto/data /usr/local/src/osm-bright/shp
+RUN chown -R www-data.www-data /usr/local/src/
 
 # Setup web pages
 RUN rm -rf /var/www/html
