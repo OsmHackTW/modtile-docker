@@ -20,6 +20,17 @@ L.OSM.Local = L.OSM.TileLayer.extend({
     url: '/osm_tiles/{z}/{x}/{y}.png',
   }
 });
+L.OSM.osmcarto = L.OSM.TileLayer.extend({
+  options: {
+    url: '/osmcarto/{z}/{x}/{y}.png',
+  }
+});
+L.OSM.osmbright = L.OSM.TileLayer.extend({
+  options: {
+    url: '/osmbright/{z}/{x}/{y}.png',
+  }
+});
+
 var localmap = new L.OSM.Local();
 var osm = new L.OSM.Mapnik();
 
@@ -37,8 +48,10 @@ var nlscmaps = [
     ];
 
 var baseMaps = {};
-baseMaps["本地街圖"] = localmap;
-baseMaps["開放街圖"] = osm;
+baseMaps["本地街圖"] = new L.OSM.Local();
+baseMaps["OSM Carto"] = new L.OSM.osmcarto();
+baseMaps["OSM Bright"] = new L.OSM.osmbright();
+baseMaps["開放街圖 (官方)"] = new L.OSM.Mapnik();
 baseMaps["正射影像圖(通用版)"] = new L.NLSC.PHOTO2({opacity: 1});
 
 var overlayMaps = {};
@@ -50,7 +63,6 @@ for (var i in nlscmaps) {
 var map = new L.Map('map', {
     center: new L.LatLng( 25.03738, 121.56351 ),
     zoom: 17,
-    // layers: [baseMaps["正射影像圖(通用版)"], overlayMaps["通用版電子地圖透明"]],
     layers: [baseMaps["本地街圖"]],
 } )
 .addControl(new L.Control.Scale())
